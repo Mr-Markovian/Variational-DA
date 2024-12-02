@@ -7,7 +7,7 @@ Problem statement:
 Given the sequence of observations $y_1,y_2,...,y_n$ find the optimal trajectory $x_1,x_2,...x_n$ over that minimizes the following cost function. The dynamical systems $M$ takes the system state $x_k$ to $x_{k+1}$.
 The weak-4dvar cost function is:
 
-$$J(X_{0:T},Y_{0:T} )=\sum_{i=1} ||X_i - M(X_{i-1})||^2+ ||Y_i-H(X_i)||^2$$
+$$J(X_{0:T})=\sum_{i=1} \|X_i - M(X_{i-1})\|^2+ \|Y_i-H(X_i)\|^2$$
 
 The two terms correspond to different to fitting to the obsrvations accounting for the observation error, the second term corresponds to the dynamical loss, i.e. which brings the state sequence close to being a dynamical trajectory of the system.   
 
