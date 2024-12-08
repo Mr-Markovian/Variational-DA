@@ -4,7 +4,7 @@ This repositiory contains a new code for weak-constraint 4dvar or simply weak-4d
 data assimilation that is implemented in pytorch and hydra.
 
 Problem statement: 
-Given the sequence of observations Observations sequence $Y^i=\{y^i_0,y^i_1,...y^i_n\}$ on ${\Omega_i} \in \Omega$  find the optimal trajectory  $X^i=\{x^i_0,x^i_1,...x^i_n\}$ over that minimizes the following cost function. 
+Given the sequence of observations Observations sequence $Y^i=\left{y^i_0,y^i_1,...y^i_n\right}$ on $\left{\Omega_i\right} \in \Omega$  find the optimal trajectory  $X^i=\left{x^i_0,x^i_1,...x^i_n\right}$ over that minimizes the following cost function. 
 The weak-4dvar cost function is:
 
 $$\mathcal{J}(X_{0:T})=\sum_{i=1} \|\|X_i - \mathcal{M}(X_{i-1})\|\|^2+ \|\|y_i-\mathcal{H}(x_i)\|\|^2$$
@@ -14,12 +14,13 @@ The two terms correspond to different to fitting to the obsrvations accounting f
 
 The paramters for any numerical experiments is loaded as a config.yaml file and hydra is used to initialise experiments. The code can run on CPU or GPU. 
 
-The current implementation has Quasi-geostrophic model on a 128 X 128 grid. 
+The current implementation has Quasi-geostrophic model on a 128 X 128 grid. The vorticity is the dynamical variable and the observations are in the stream function space.
+The observations masks are Nadir Satelite altimetry tracks. The nature of these observations are realistic, and they are very sparse. 
+
+[vorticity_and_masks](vort_sf_obs_128.pdf)
+
+
 The weak-4dvar problem is solved for 10 day assimilation window. The  
-
-
-The observations are Nadir Satelite altimetry tracks. 
-The nature of these observations are realistic, and they are very sparse. 
 The default implementation performs optimization of the loss function of the weak-4dvar using SGD based algorithm, although this can be easily changed to a different optimizer that is written or available in pytorch. 
 We have explored different initial conditions at the moment:
 
