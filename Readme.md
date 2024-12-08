@@ -4,11 +4,12 @@ This repositiory contains a new code for weak-constraint 4dvar or simply weak-4d
 data assimilation that is implemented in pytorch and hydra.
 
 Problem statement: 
-Given the sequence of observations $y_1,y_2,...,y_n$ find the optimal trajectory $x_1,x_2,...x_n$ over that minimizes the following cost function. The dynamical systems $M$ takes the system state $x_k$ to $x_{k+1}$.
+Given the sequence of observations Observations sequence $Y^i=\{y^i_0,y^i_1,...y^i_n\}$ on ${\Omega_i} \in \Omega$  find the optimal trajectory  $X^i=\{x^i_0,x^i_1,...x^i_n\}$ over that minimizes the following cost function. 
 The weak-4dvar cost function is:
 
-$$J(X_{0:T})=\sum_{i=1} \|X_i - M(X_{i-1})\|^2+ \|Y_i-H(X_i)\|^2$$
+$$\mathcal{J}(X_{0:T})=\sum_{i=1} \|\|X_i - \mathcal{M}(X_{i-1})\|\|^2+ \|\|y_i-\mathcal{H}(x_i)\|\|^2$$
 
+The dynamical systems $M$ takes the system state $X_k$ to $X_{k+1}$.
 The two terms correspond to different to fitting to the obsrvations accounting for the observation error, the second term corresponds to the dynamical loss, i.e. which brings the state sequence close to being a dynamical trajectory of the system.   
 
 The paramters for any numerical experiments is loaded as a config.yaml file and hydra is used to initialise experiments. The code can run on CPU or GPU. 
