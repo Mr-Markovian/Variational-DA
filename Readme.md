@@ -4,7 +4,7 @@ This repositiory contains a new code for weak-constraint 4dvar or simply weak-4d
 data assimilation that is implemented in pytorch and hydra.
 
 Problem statement: 
-Given the sequence of observations Observations sequence $Y^i=\left{y^i_0,y^i_1,...y^i_n\right}$ on $\left{\Omega_i\right} \in \Omega$  find the optimal trajectory  $X^i=\left{x^i_0,x^i_1,...x^i_n\right}$ over that minimizes the following cost function. 
+Given the sequence of observations Observations sequence $Y^i=\left(y^i_0,y^i_1,...y^i_n\right)$ on $\left(\Omega_i\right) \in \Omega$  find the optimal trajectory  $X^i=\left(x^i_0,x^i_1,...x^i_n\right)$ over that minimizes the following cost function. 
 The weak-4dvar cost function is:
 
 $$\mathcal{J}(X_{0:T})=\sum_{i=1} \|\|X_i - \mathcal{M}(X_{i-1})\|\|^2+ \|\|y_i-\mathcal{H}(x_i)\|\|^2$$
