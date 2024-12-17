@@ -7,18 +7,18 @@ Problem statement:
 Given the sequence of observations Observations sequence $Y^i=\left(y^i_0,y^i_1,...y^i_n\right)$ on $\left(\Omega_i\right) \in \Omega$, find the optimal trajectory  $X^i=\left(x^i_0,x^i_1,...x^i_n\right)$ that minimizes the following cost function. 
 The weak-4dvar cost function is:
 
-$$\mathcal{J}(X_{0:T})=\sum_{i=1} \|\|X_i - \mathcal{M}(X_{i-1})\|\|^2+ \|\|y_i-\mathcal{H}(x_i)\|\|^2$$
+$$\mathcal{J}(x^i_0,x^i_1,...x^i_n)=\sum_{k=1} \|\|x_k - \mathcal{M}(x_{k-1})\|\|^2+ \|\|y_i-\mathcal{H}(x_i)\|\|^2$$
 
-The dynamical systems $M$ takes the system state $X_k$ to $X_{k+1}$.
+The dynamical systems $\mathcal{M}$ takes the system state $x_k$ to $x_{k+1}$.
 The two terms correspond to different to fitting to the obsrvations accounting for the observation error, the second term corresponds to the dynamical loss, i.e. which brings the state sequence close to being a dynamical trajectory of the system.   
 
-The paramters for any numerical experiments is loaded as a config.yaml file and hydra is used to initialise experiments. The code can run on CPU or GPU. 
+The paramters for any numerical experiments is loaded as a config.yaml file and hydra is used to initialise experiments. The code is both CPU and GPU compatible. 
 
-The current implementation has Quasi-geostrophic model on a 128 X 128 grid. The vorticity is the dynamical variable and the observations are in the stream function space.
-The observations masks are Nadir Satelite altimetry tracks. The nature of these observations are realistic, and they are very sparse. 
+The current implementation has Quasi-geostrophic model on a $128$ X $128$ grid. The vorticity is the dynamical variable and the observations are in the stream function space with some noise added to them.
+
+These observations are available on masks which have been obtained from Nadir Satelite altimetry tracks. The nature of these observations are realistic- they are really quite sparse! 
 
 ![vorticity_and_masks](vort_sf_obs_128.pdf)
-
 
 The weak-4dvar problem is solved for 10 day assimilation window. The  
 The default implementation performs optimization of the loss function of the weak-4dvar using SGD based algorithm, although this can be easily changed to a different optimizer that is written or available in pytorch. 
