@@ -19,7 +19,7 @@ The first term minimizes the depatures from a pure model trajectory since the ai
 For testing algorithms, we extensive experiments on toy models such as L63/ L96 which are ODEs, have been shown in literature.  
 QG model is interesting PDE model of intermediate complexity for studying performace of state estimation problem in machine learning, deep learning problem in data assimilation. The vorticity is the dynamical variable and the observations are in the stream function space with some noise added to them.
 
-Domain $D=[0,2 \pi)^2, \omega : $ vorticity, $\psi: $ is stream-function.     
+Domain $=\left[0,2 \pi\right)^2$, $\omega $: vorticity, $\psi$: stream-function.     
 
 $$
 \frac{\partial \omega}{\partial t}+ J(\psi, \omega)= \nu \nabla^2 \omega - \mu \omega - \beta \partial_x \psi \,, \quad \omega = \nabla^2 \psi \,, \quad $$
