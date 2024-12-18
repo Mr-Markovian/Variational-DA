@@ -19,9 +19,10 @@ The first term minimizes the depatures from a pure model trajectory since the ai
 For testing algorithms, we extensive experiments on toy models such as L63/ L96 which are ODEs, have been shown in literature.  
 QG model is interesting PDE model of intermediate complexity for studying performace of state estimation problem in machine learning, deep learning problem in data assimilation. The vorticity is the dynamical variable and the observations are in the stream function space with some noise added to them.
 
-Domain $D=[0,2 \pi)^2$, $\omega : $ vorticity, $\psi: $ is stream-function 
+Domain $D=[0,2 \pi)^2, \omega : $ vorticity, $\psi: $ is stream-function.     
+
 $$
-\frac{\partial \omega}{\partial t}+ J(\psi, \omega)= \nu \nabla^2 \omega - \mu \omega - \beta \partial_x \psi + \textcolor{blue}{F(x,y)}  \,, \quad \omega = \nabla^2 \psi \,, \quad $$
+\frac{\partial \omega}{\partial t}+ J(\psi, \omega)= \nu \nabla^2 \omega - \mu \omega - \beta \partial_x \psi \,, \quad \omega = \nabla^2 \psi \,, \quad $$
 
 The current implementation has Quasi-geostrophic model on a grid of $128$ X $128$  dimension. The ground truth is a $1024$ X $1024$ simulated voriticity and stream function coarse grained on the low resolution grid. The PDE has PBC and we use psueod-spectral methods to solve them( all in pytorch.)
 
