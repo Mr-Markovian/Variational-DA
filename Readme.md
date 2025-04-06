@@ -26,6 +26,9 @@ $$
 
 The current implementation has Quasi-geostrophic model on a grid of $128$ X $128$  dimension. The ground truth is a $1024$ X $1024$ simulated voriticity and stream function coarse grained on the low resolution grid. The PDE has PBC and we use psueod-spectral methods to solve them( all in pytorch.)
 
+![evolution_in_time](vorticity_sf_evolution.gif)
+
+
 These observations are available on masks which have been obtained from Nadir Satelite altimetry tracks. The nature of these observations are realistic- they are really quite sparse! 
 Below is a snapshot of vorticity field, the stream function and the kind of observations we have for any time. The observations and the masks are different at different times.
 ![vorticity_and_masks](vort_sf_obs_128.png)
