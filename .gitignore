@@ -1,0 +1,27 @@
+*.Identifier
+/4dvar/outputs
+/4dvar/.ipynb_checkpoints
+*.ipynb
+
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore outputs and logs
+output/
+outputs/
+*.log
+
+# Ignore data files
+data/
+*.npy
+*.npz
+*.nc
+
+# Ignore environment files
+.env
+.venv

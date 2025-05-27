@@ -1,0 +1,75 @@
+# config/config.yaml
+
+scale: 16
+params:
+  regime: 'forcing_no_t_dep'
+  Lx: 6.283185307179586  # 2 * math.pi
+  Ly: 6.283185307179586  # 2 * math.pi
+  Nx: 128
+  Ny: 128
+  dt: 0.0016  # (1.0E-4) * scale
+  mu: 0.02
+  nu: 1.025E-5
+  t0: 0.0
+  nv: 1
+  B: 0
+  device: "cuda"
+  topography: True
+  seed: 20250518
+  
+qg_solver:
+  solver: 'rk4'
+  rtol: 1e-4
+  atol: 1e-4
+  step_size: 1.6e-3
+  adjoint: True
+  autonomous: False
+  num_steps: 200
+  
+hydra:
+  run:
+    dir: 'outputs/trial-exps'
+
+qg_data:
+  path: '${hydra:runtime.cwd}/data/swot_plus_nadir_stream_function_dataset_forcing_no_t_lr_128_dt=0.0002_save_freq=1600.nc'
+  tgt: 'stream_function'
+  obs: 'sf_obs'
+  state: 'vorticity'
+  ob_masks: 'masks'
+  sparsity: 1
+
+fourd_var:
+  days: 10
+  NIter: 50
+  alpha_obs: 10.0
+  alpha_dyn: 1.0
+  noise_std: 0.1 # 0.24 is 10 % of the observation noise std.
+  delta: 0.1
+  ic_type: 'coherent-space-shifted'
+  seed1: 41   # seed for the random-shift x fields
+  seed2: 39   # seed for the random-shift y fields
+  l_scale: 5 # spatial correlation length
+  t_scale: 20  # Temporal correlation length
+  sigma_field: 10.0    # Standard deviation of the random-shifted fields
+  mean_x: 0.0
+  mean_y: 0.0
+  max_batch: 1
+  optimizer: 'SGD'
+
+metric:
+    rmse: ''
+    fourDvar_score: ''
+    dynamical_score: ''
+    observation_score: ''
+
+
+output:
+  base_dir: "${hydra:runtime.output_dir}"
+  dir_structure: "${output.base_dir}/${params.regime}_grid_${params.Nx}_ic_type_${fourd_var.ic_type}/ob_noise_${fourd_var.noise_std}_sparsity_${qg_data.sparsity}_sigma_field_${fourd_var.sigma_field}"
+  losses_file: "${output.dir_structure}/losses.npy"
+  solution_file: "${output.dir_structure}/optimal_4dvar_solution.npy"
+  rmse_file: "${output.dir_structure}/optimal_states_rmse.npy"
+  true_state_scores_file: "${output.dir_structure}/true_4dvar_scores.npy"
+  optimal_state_scores_file: "${output.dir_structure}/optimal_4dvar_scores.npy"
+  
+  
