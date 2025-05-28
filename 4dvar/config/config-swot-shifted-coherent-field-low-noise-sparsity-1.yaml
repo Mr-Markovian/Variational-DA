@@ -28,7 +28,7 @@ qg_solver:
   
 hydra:
   run:
-    dir: 'outputs/trial-exps'
+    dir: '${hydra:runtime.cwd}/outputs/trial-exps'
 
 qg_data:
   path: '${hydra:runtime.cwd}/data/swot_plus_nadir_stream_function_dataset_forcing_no_t_lr_128_dt=0.0002_save_freq=1600.nc'

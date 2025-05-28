@@ -8,7 +8,7 @@ This repositiory contains a new code for solving the weak-constraint 4dvar or si
 Given the sequence of observations Observations sequence $Y^i=\left(y^i_0,y^i_1,...y^i_n\right)$ on $\left(\Omega_i\right) \in \Omega$, find the optimal trajectory  $X^i=\left(x^i_0,x^i_1,...x^i_n\right)$ that minimizes the following cost function. 
 The weak-4dvar cost function is:
 
-$$\mathcal{J}(x^i_0,x^i_1,...x^i_n)=\sum_{k=1} \|x_k - \mathcal{M}(x_{k-1})\|^2+ \|y_i-\mathcal{H}(x_i)\|^2$$
+$$\mathcal{J}(x^i_0,x^i_1,...x^i_n)=\sum_{k=1} \| x_k - \mathcal{M}(x_{k-1}) \|^2+ \|y_i-\mathcal{H}(x_i)\|^2$$
 
 The dynamical systems $\mathcal{M}$, the dynamical propagator which takes the system state $x_k$ to $x_{k+1}$.
 The above weak formulation of the 4dvar problem accounts for additional model errors in the dynamical system as the dynamics is not perfect, hence there dynamical cost term. 

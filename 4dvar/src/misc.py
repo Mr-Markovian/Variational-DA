@@ -1,6 +1,37 @@
 import torch
 import torch.nn.functional as F
 
+def initialize_optimizer(X_torch, optimizer_type, delta):
+    """Initialize the optimizer based on the configuration."""
+    if optimizer_type == 'SGD':
+        return torch.optim.SGD([X_torch], lr=delta, momentum=0.5, nesterov=True)
+    if optimizer_type == 'ADAM':
+        return torch.optim.Adam([X_torch], lr=delta, eps=1e-3, amsgrad=True)
+    if optimizer_type == 'LBFGS':
+        return torch.optim.LBFGS([X_torch], lr=1.0, history_size=20, line_search_fn='strong_wolfe')
+    raise ValueError(f"Unknown optimizer type: {optimizer_type}")
+
+def extract_states_from_batch(batch, ic_type, fourDvar_cfg, params):
+    """Extract and preprocess states from the batch based on the initial condition type."""
+    X_torch, X_sf_torch, YObs_torch, Masks_torch = batch
+    if ic_type == 'true field':
+        return X_torch.squeeze(0), X_sf_torch.squeeze(0), YObs_torch.squeeze(0), Masks_torch.squeeze(0)
+
+    if ic_type == 'blurred_ic':
+        X_torch = apply_gaussian_smoothing(X_torch.squeeze(0), fourDvar_cfg.kernel_size, fourDvar_cfg.sigma).unsqueeze(0)
+        return X_torch.squeeze(0), X_sf_torch.squeeze(0), YObs_torch.squeeze(0), Masks_torch.squeeze(0)
+
+    if ic_type == 'coherent-space-shifted':
+        displacement_x = generate_correlated_fields(params.Nx, fourDvar_cfg.l_scale, fourDvar_cfg.t_scale, 
+                                                    fourDvar_cfg.sigma_field, device=params.device, seed=fourDvar_cfg.seed1)
+        displacement_y = generate_correlated_fields(params.Nx, fourDvar_cfg.l_scale, fourDvar_cfg.t_scale, 
+                                                    fourDvar_cfg.sigma_field, device=params.device, seed=fourDvar_cfg.seed2)
+        X_torch = warp_field(X_torch.squeeze(0).unsqueeze(1), displacement_x + fourDvar_cfg.mean_x, 
+                             displacement_y + fourDvar_cfg.mean_y).squeeze(1)
+        return X_torch.squeeze(0), X_sf_torch.squeeze(0), YObs_torch.squeeze(0), Masks_torch.squeeze(0)
+    
+    raise ValueError(f"Unknown ic_type: {ic_type}")
+
 def generate_correlated_fields(N, L, T_corr, sigma, num_fields=10, device='cpu',seed=41):
     """
     Generate a series of 2D fields with both spatial and temporal correlations.
