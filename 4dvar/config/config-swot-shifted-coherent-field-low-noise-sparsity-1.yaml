@@ -22,7 +22,7 @@ qg_solver:
   rtol: 1e-4
   atol: 1e-4
   step_size: 1.6e-3
-  adjoint: True
+  adjoint: False
   autonomous: False
   num_steps: 200
   
@@ -41,7 +41,7 @@ qg_data:
 fourd_var:
   days: 10
   NIter: 50
-  alpha_obs: 10.0
+  alpha_obs: 1.0
   alpha_dyn: 1.0
   noise_std: 0.1 # 0.24 is 10 % of the observation noise std.
   delta: 0.1
@@ -54,7 +54,7 @@ fourd_var:
   mean_x: 0.0
   mean_y: 0.0
   max_batch: 1
-  optimizer: 'SGD'
+  optimizer: 'LBFGS'
 
 metric:
     rmse: ''
