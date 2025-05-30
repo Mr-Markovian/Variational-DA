@@ -1,14 +1,14 @@
 ## Variational Data Assimilation
-Data assimilation algorithms are necessary to track or estimate the hidden state of chaotic systems through partial and noisy observations. 
-Variational data assimilation aims to find a the best trajectory of the dynamical system which minimizes certain cost function. 
+[Data assimilation](https://www.ecmwf.int/en/research/data-assimilation) algorithms are necessary to track or estimate the hidden state of chaotic systems through partial and noisy observations. 
+[Variational data assimilation](https://link.springer.com/chapter/10.1007/978-3-030-96709-3_5) aims to find a the best trajectory of the dynamical system which minimizes a certain cost function. 
 
 This repositiory contains a new code for solving the weak-constraint 4dvar or simply weak-4dvar data assimilation for QG model. All the code in this repo is implemented in pytorch with handing experiment configurations using hydra. 
 
 ## Problem statement: 
-Given the sequence of observations Observations sequence $Y^i=\left(y^i_0,y^i_1,...y^i_n\right)$ on $\left(\Omega_i\right) \in \Omega$, find the optimal trajectory  $X^i=\left(x^i_0,x^i_1,...x^i_n\right)$ that minimizes the following cost function. 
+Given the sequence of observations Observations sequence $Y^i=\left(y^i_0,y^i_1,...y^i_n\right)$ on $\left(\Omega^i_n\right) \in \Omega$, find the optimal trajectory  $X^i=\left(x^i_0,x^i_1,...x^i_n\right)$ that minimizes the following cost function. 
 The weak-4dvar cost function is:
 
-$$\mathcal{J}(x^i_0,x^i_1,...x^i_n)=\sum_{k=1} \| x_k - \mathcal{M}(x_{k-1}) \|^2+ \|y_i-\mathcal{H}(x_i)\|^2$$
+$$\mathcal{J}(x^i_0,x^i_1,...x^i_n)=\sum_{k=1} \alpha_{dyn} \| x_k - \mathcal{M}(x_{k-1}) \|^2+ \alpha_{ob} \|y_i-\mathcal{H}(x_i)\|^2$$
 
 The dynamical systems $\mathcal{M}$, the dynamical propagator which takes the system state $x_k$ to $x_{k+1}$.
 The above weak formulation of the 4dvar problem accounts for additional model errors in the dynamical system as the dynamics is not perfect, hence there dynamical cost term. 
@@ -17,7 +17,7 @@ The first term minimizes the depatures from a pure model trajectory since the ai
 
 ## Quasi-geostrophic model: the underlying dynamical system for OSSE.
 For testing algorithms, we want to go beyong over-simplistic ODE models such as L63/ L96 which are ODEs in 3 and 40 dimensions. 
-QG model is interesting PDE model of intermediate complexity for studying performace of state estimation problem in machine learning, deep learning problem in data assimilation. The vorticity is the dynamical variable and the observations are in the stream function space with some noise added to them.
+QG model is interesting PDE model of intermediate complexity for studying performace of state estimation problem in machine learning, deep learning problem in data assimilation. The vorticity is the dynamical variable and the observations are in the stream function space with some noise added to them. I started out with the codes of [Hugo Frezat](https://github.com/hrkz/torchqg) for QG, but I have made significant changes to the code to make it compatible with the weak-4dvar problem and to integrate it with neural ode package. 
 
 Domain $=\left[0,2 \pi\right)^2$, $\omega $: vorticity, $\psi$: stream-function.     
 
@@ -37,6 +37,17 @@ Below is a snapshot of vorticity field, the stream function and the kind of obse
 We solve the weak-4dvar problem for 10-day assimilation window. The  
 The default implementation performs optimization of the loss function of the weak-4dvar using SGD based algorithm, although this can be easily changed to a different optimizer that is written or available in pytorch. 
 
+So, here is a demonstration of the problem: we start with an IC for 10 days of assimilation window.
+![truth and error](figures/Position-based-error-for-ic.png)
+
+
+We then optimizer the weak 4dvar loss function during the optimization. The loss function is computed at every time step and the optimization is performed for 10 days of assimilation window.
+![loss_function](figures/loss_vor_truth_and_optimal_sol_sigma_15_ic_alpha_obs_1.0.png)
+
+And finally, what we get at the end of the optimization is something like below.
+![truth and error](figures/vor_truth_and_optimal_sol_sigma_15_ic_alpha_obs_1.0.png)
+
+
 The paramters for any numerical experiments is loaded as a 'config.yaml' file and hydra is used to initialise experiments. The code is both CPU and GPU compatible. 
 Here is a result from one of the initial conditions, (discussed further below ):
 We have explored different initial conditions at the moment:
@@ -46,7 +57,7 @@ We have explored different initial conditions at the moment:
 3. Gaussian random field- a prior with temporal correlation on the initial state.
 4. Coherent-shifted field- to mimic psition based errors.
 
-The last kind of error is the focus of my experiments. How I am simulating these kind of errors is part of another repository here-. 
+The last kind of error is the focus of my experiments. How I am simulating these kind of errors is part of another repository here-https://github.com/Mr-Markovian/spatially-coherent-random-perturbations. 
 But this kind of IC is specific to our study and not necessary for the weak-4dvar algorithm in general. 
 
 
@@ -56,4 +67,23 @@ To experiment with new models, we need two things:
 1. The dataset and the dataloader within it for the observations of the system.
 2. A pytorch implementation of 'your_dynamical_system.py' using pytorch's nn module.
 
-The neuralode package which will be able to handle derivative computation via the adjoint implementation. At this moment, the code is purely designed for my own experiments. If you find it useful and want to collaborate on an interesting idea in the space of data assimilation and dynamical systems, reach out to me via email or linkedin :)
+The neuralode package [https://github.com/rtqichen/torchdiffeq](https://github.com/rtqichen/torchdiffeq) is what I use to handle the derivative computation. At this moment, the code is purely designed for my own experiments. If you find it useful and want to collaborate on an interesting idea in the space of data assimilation and dynamical systems, reach out to me via email or linkedin :)
+
+Currently, the my publication is under preparation and will be submitted soon, but incase you use it, do not hesitate to use the following citation:
+```bibtex
+@inproceedings{Roy2025,
+  author = {Roy, S. K. and Fablet, R.},
+  title = {Performance Gains and Advantages of 4DVarNet in End-to-End Learning for Data Assimilation},
+  booktitle = {EGU General Assembly 2025},
+  location = {Vienna, Austria},
+  date = {27 Apr--2 May 2025},
+  id = {EGU25-4300},
+  doi = {10.5194/egusphere-egu25-4300},
+  year = {2025}
+}
+
+```
+
+<script type="text/javascript" async
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>

@@ -22,7 +22,7 @@ qg_solver:
   rtol: 1e-4
   atol: 1e-4
   step_size: 1.6e-3
-  adjoint: False
+  adjoint: True
   autonomous: False
   num_steps: 200
   
@@ -40,17 +40,19 @@ qg_data:
 
 fourd_var:
   days: 10
-  NIter: 50
+  NIter: 30
   alpha_obs: 1.0
   alpha_dyn: 1.0
   noise_std: 0.1 # 0.24 is 10 % of the observation noise std.
   delta: 0.1
-  ic_type: 'coherent-space-shifted'
+  ic_type: 'true field'
+  kernel_size: 15
+  blur_std: 3.0
   seed1: 41   # seed for the random-shift x fields
   seed2: 39   # seed for the random-shift y fields
-  l_scale: 5 # spatial correlation length
+  l_scale: 5  # spatial correlation length
   t_scale: 20  # Temporal correlation length
-  sigma_field: 10.0    # Standard deviation of the random-shifted fields
+  sigma_field: 0.0    # Standard deviation of the random-shifted fields
   mean_x: 0.0
   mean_y: 0.0
   max_batch: 1
@@ -71,5 +73,6 @@ output:
   rmse_file: "${output.dir_structure}/optimal_states_rmse.npy"
   true_state_scores_file: "${output.dir_structure}/true_4dvar_scores.npy"
   optimal_state_scores_file: "${output.dir_structure}/optimal_4dvar_scores.npy"
+  config_file: "${output.dir_structure}/config.yaml"
   
   

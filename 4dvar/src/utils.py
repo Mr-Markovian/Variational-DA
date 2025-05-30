@@ -1,7 +1,6 @@
 import torch
 import torch.nn.functional as F
 
-
 def initialize_optimizer(X_torch, fourDvar_cfg):
     """Initialize the optimizer based on the configuration."""
     if fourDvar_cfg.optimizer == 'SGD':
@@ -20,7 +19,7 @@ def extract_states_from_batch(batch, fourDvar_cfg, params):
         return X_torch.squeeze(0), X_sf_torch.squeeze(0), YObs_torch.squeeze(0), Masks_torch.squeeze(0)
 
     if fourDvar_cfg.ic_type == 'blurred_ic':
-        X_torch = apply_gaussian_smoothing(X_torch.squeeze(0), fourDvar_cfg.kernel_size, fourDvar_cfg.sigma).unsqueeze(0)
+        X_torch = apply_gaussian_smoothing(X_torch.squeeze(0), fourDvar_cfg.kernel_size, fourDvar_cfg.blur_std).unsqueeze(0)
         return X_torch.squeeze(0), X_sf_torch.squeeze(0), YObs_torch.squeeze(0), Masks_torch.squeeze(0)
 
     if fourDvar_cfg.ic_type == 'coherent-space-shifted':
@@ -31,8 +30,21 @@ def extract_states_from_batch(batch, fourDvar_cfg, params):
         X_torch = warp_field(X_torch.squeeze(0).unsqueeze(1), displacement_x + fourDvar_cfg.mean_x, 
                              displacement_y + fourDvar_cfg.mean_y).squeeze(1)
         return X_torch.squeeze(0), X_sf_torch.squeeze(0), YObs_torch.squeeze(0), Masks_torch.squeeze(0)
+    
+    if fourDvar_cfg.ic_type == 'blurred-coherent-space-shifted':
+        displacement_x = generate_correlated_fields(params.Nx, fourDvar_cfg.l_scale, fourDvar_cfg.t_scale, 
+                                                    fourDvar_cfg.sigma_field, device=params.device, seed=fourDvar_cfg.seed1)
+        displacement_y = generate_correlated_fields(params.Nx, fourDvar_cfg.l_scale, fourDvar_cfg.t_scale, 
+                                                    fourDvar_cfg.sigma_field, device=params.device, seed=fourDvar_cfg.seed2)
+        X_torch = warp_field(X_torch.squeeze(0).unsqueeze(1), displacement_x + fourDvar_cfg.mean_x, 
+                             displacement_y + fourDvar_cfg.mean_y).squeeze(1)
+        X_torch = apply_gaussian_smoothing(X_torch.squeeze(0), fourDvar_cfg.kernel_size, fourDvar_cfg.blur_std).unsqueeze(0)
+        return X_torch.squeeze(0), X_sf_torch.squeeze(0), YObs_torch.squeeze(0), Masks_torch.squeeze(0)
+
+
 
     raise ValueError(f"Unknown ic_type: {fourDvar_cfg.ic_type}")
+
 
 
 

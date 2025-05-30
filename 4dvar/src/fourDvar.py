@@ -22,7 +22,12 @@ def optimize(QG_ODE_model, qg, params, qg_data_cfg, batch_idx, batch, fourDvar_c
     losses = torch.zeros(fourDvar_cfg.NIter, 3)
     for iter in range(fourDvar_cfg.NIter):
         with torch.set_grad_enabled(True):
-            if fourDvar_cfg.optimizer == 'LBFGS':
+            if fourDvar_cfg.optim_switch_iter == 28:
+                fourDvar_cfg.optimizer = 'LBFGS'  # Switch to LBFGS after 500 iterations
+                print("Switching to LBFGS optimizer after 20 iterations.")
+                optimizer = initialize_optimizer(X_torch, fourDvar_cfg)
+
+            if fourDvar_cfg.optimizer == 'LBFGS' or iter >= 28:
             # Define the closure for LBFGS
                 def closure():
                     optimizer.zero_grad()  # Reset gradients
@@ -33,6 +38,7 @@ def optimize(QG_ODE_model, qg, params, qg_data_cfg, batch_idx, batch, fourDvar_c
                                                             Masks_torch, 
                                                             noise,
                                                             fourDvar_cfg)
+                    losses[iter, :] = torch.tensor([loss.item(), loss_dyn.item(), loss_obs.item()])
                     print(f"iter {iter}: loss {loss.item():.3f}, dyn_loss {loss_dyn.item():.3f}, obs_loss {loss_obs.item():.3f}")
                     loss.backward()  # Compute gradients
                     return loss
@@ -64,7 +70,7 @@ def compute_loss(QG_ODE_model, qg, X_torch, X_sf_torch, Masks_torch, noise, four
     sf_torch = qg.get_streamfunction(X_torch)
 
     loss_dyn = torch.sum((sf_torch[1:] - sf_pred) ** 2)
-    loss_obs = torch.sum((sf_torch[Masks_torch] - X_sf_torch[Masks_torch] - noise) ** 2)
+    loss_obs = torch.sum((sf_torch[Masks_torch] - X_sf_torch[Masks_torch] + noise) ** 2)
 
     total_loss = fourDvar_cfg.alpha_obs * loss_obs + fourDvar_cfg.alpha_dyn * loss_dyn
     return total_loss, loss_dyn, loss_obs
