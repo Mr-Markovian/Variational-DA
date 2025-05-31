@@ -5,15 +5,15 @@
 This repositiory contains a new code for solving the weak-constraint 4dvar or simply weak-4dvar data assimilation for a differentiable QG model. All the code in this repo is implemented in pytorch with handing experiment configurations using hydra. 
 
 ## Problem statement: 
-Given the sequence of observations Observations sequence \(Y^i=\left(y^i_0,y^i_1,...y^i_n\right)\) on \(\left(\Omega^i_n\right) \in \Omega\), find the optimal trajectory  \(X^i=\left(x^i_0,x^i_1,...x^i_n\right)\) that minimizes the following cost function. 
+Given the sequence of observations Observations sequence $Y^i=\left(y^i_0,y^i_1,...y^i_n\right)$ on $\left(\Omega^i_n\right) \in \Omega$, find the optimal trajectory  $X^i=\left(x^i_0,x^i_1,...x^i_n\right)$ that minimizes the following cost function. 
 The weak-4dvar cost function is:
 
 $$\mathcal{J}(x^i_0,x^i_1,...x^i_n)=\sum_{k=1} \alpha_{dyn} \| x_k - \mathcal{M}(x_{k-1}) \|^2+ \alpha_{ob} \|y_i-\mathcal{H}(x_i)\|^2$$
 
-The dynamical systems \( \mathcal{M} \), the dynamical propagator which takes the system state \(x_k\) to \(x_{k+1}\).
-The above weak formulation of the 4dvar problem accounts for additional model errors in the dynamical system as the dynamics is not perfect, hence there dynamical cost term. 
+The dynamical systems $ \mathcal{M} $, the dynamical propagator which takes the system state $x_k$ to $x_{k+1}$.
+The above weak formulation of the 4dvar problem accounts for additional model errors in the dynamical system as the dynamics is not perfect, hence there dynamical cost term.
 
-The first term minimizes the depatures from a pure model trajectory since the aim to find a trajectory close to the model trajectory while accounting for the model error- a part we refer to as the dynamical cost. The second term makes the trajectory fit to the obsrvations while accounting for the observation error and is referred as observation cost.  
+The first term minimizes the depatures from a pure model trajectory since the aim to find a trajectory close to the model trajectory while accounting for the model error- a part we refer to as the dynamical cost. The second term makes the trajectory fit to the obsrvations while accounting for the observation error and is referred as observation cost.
 
 ## Quasi-geostrophic model: the underlying dynamical system for OSSE.
 To rigorously evaluate and benchmark state estimation algorithms, it is crucial to move beyond over-simplified dynamical systems like the Lorenz-63 or Lorenz-96 models, which are low-dimensional ODEs (3 and 40 dimensions, respectively). With recent trends of deep learning, traditional data assimilation problems that need adjoint computation may bypass this step by leveraging AD(automatic differentiation)- the work-horse of modern machine learning. The Quasi-Geostrophic (QG) model offers a more realistic and challenging alternative. As a PDE-based model, the QG system captures essential features of large-scale geophysical fluid dynamics while remaining computationally tractable. It serves as a model of intermediate complexity, bridging the gap between toy models and full-scale numerical weather prediction systems.
@@ -87,4 +87,8 @@ Currently, my publication is under preparation and will be submitted soon, but i
 
 <script type="text/javascript" async
   src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+<script type="text/javascript" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
 </script>
