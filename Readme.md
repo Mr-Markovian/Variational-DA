@@ -2,24 +2,25 @@
 [Data assimilation](https://www.ecmwf.int/en/research/data-assimilation) algorithms are necessary to track or estimate the hidden state of chaotic systems through partial and noisy observations. 
 [Variational data assimilation](https://link.springer.com/chapter/10.1007/978-3-030-96709-3_5) aims to find a the best trajectory of the dynamical system which minimizes a certain cost function. 
 
-This repositiory contains a new code for solving the weak-constraint 4dvar or simply weak-4dvar data assimilation for QG model. All the code in this repo is implemented in pytorch with handing experiment configurations using hydra. 
+This repositiory contains a new code for solving the weak-constraint 4dvar or simply weak-4dvar data assimilation for a differentiable QG model. All the code in this repo is implemented in pytorch with handing experiment configurations using hydra. 
 
 ## Problem statement: 
-Given the sequence of observations Observations sequence $Y^i=\left(y^i_0,y^i_1,...y^i_n\right)$ on $\left(\Omega^i_n\right) \in \Omega$, find the optimal trajectory  $X^i=\left(x^i_0,x^i_1,...x^i_n\right)$ that minimizes the following cost function. 
+Given the sequence of observations Observations sequence \(Y^i=\left(y^i_0,y^i_1,...y^i_n\right)\) on \(\left(\Omega^i_n\right) \in \Omega\), find the optimal trajectory  \(X^i=\left(x^i_0,x^i_1,...x^i_n\right)\) that minimizes the following cost function. 
 The weak-4dvar cost function is:
 
 $$\mathcal{J}(x^i_0,x^i_1,...x^i_n)=\sum_{k=1} \alpha_{dyn} \| x_k - \mathcal{M}(x_{k-1}) \|^2+ \alpha_{ob} \|y_i-\mathcal{H}(x_i)\|^2$$
 
-The dynamical systems $\mathcal{M}$, the dynamical propagator which takes the system state $x_k$ to $x_{k+1}$.
+The dynamical systems \( \mathcal{M} \), the dynamical propagator which takes the system state \(x_k\) to \(x_{k+1}\).
 The above weak formulation of the 4dvar problem accounts for additional model errors in the dynamical system as the dynamics is not perfect, hence there dynamical cost term. 
 
 The first term minimizes the depatures from a pure model trajectory since the aim to find a trajectory close to the model trajectory while accounting for the model error- a part we refer to as the dynamical cost. The second term makes the trajectory fit to the obsrvations while accounting for the observation error and is referred as observation cost.  
 
 ## Quasi-geostrophic model: the underlying dynamical system for OSSE.
-For testing algorithms, we want to go beyong over-simplistic ODE models such as L63/ L96 which are ODEs in 3 and 40 dimensions. 
-QG model is interesting PDE model of intermediate complexity for studying performace of state estimation problem in machine learning, deep learning problem in data assimilation. The vorticity is the dynamical variable and the observations are in the stream function space with some noise added to them. I started out with the codes of [Hugo Frezat](https://github.com/hrkz/torchqg) for QG, but I have made significant changes to the code to make it compatible with the weak-4dvar problem and to integrate it with neural ode package. 
+To rigorously evaluate and benchmark state estimation algorithms, it is crucial to move beyond over-simplified dynamical systems like the Lorenz-63 or Lorenz-96 models, which are low-dimensional ODEs (3 and 40 dimensions, respectively). With recent trends of deep learning, traditional data assimilation problems that need adjoint computation may bypass this step by leveraging AD(automatic differentiation)- the work-horse of modern machine learning. The Quasi-Geostrophic (QG) model offers a more realistic and challenging alternative. As a PDE-based model, the QG system captures essential features of large-scale geophysical fluid dynamics while remaining computationally tractable. It serves as a model of intermediate complexity, bridging the gap between toy models and full-scale numerical weather prediction systems.
 
-Domain $=\left[0,2 \pi\right)^2$, $\omega $: vorticity, $\psi$: stream-function.     
+In the QG model, the vorticity field is the fundamental dynamical variable, evolving under nonlinear advection and forcing, and governed by conservation laws. Observations, however, are typically taken in the streamfunction space, which is related to vorticity through an elliptic inversion (a form of diagnostic relationship). This setup introduces a realistic observation operator and offers a natural framework for exploring the performance of data assimilation techniques in the presence of model and observation noise. The QG model is thus particularly well-suited for testing advanced machine learning and deep learning methods for data assimilation I started out with the codes of [Hugo Frezat](https://github.com/hrkz/torchqg) for QG, but I have made significant changes to the code to make it compatible with the weak-4dvar problem and to integrate it with neural ode package.
+
+Domain \(=\left[0,2 \pi\right)^2\), \(\omega \): vorticity, \(\psi\): stream-function.
 
 $$
 \frac{\partial \omega}{\partial t}+ J(\psi, \omega)= \nu \nabla^2 \omega - \mu \omega - \beta \partial_x \psi \,, \quad \omega = \nabla^2 \psi \, \quad $$
@@ -57,7 +58,7 @@ We have explored different initial conditions at the moment:
 3. Gaussian random field- a prior with temporal correlation on the initial state.
 4. Coherent-shifted field- to mimic psition based errors.
 
-The last kind of error is the focus of my experiments. How I am simulating these kind of errors is part of another repository here-https://github.com/Mr-Markovian/spatially-coherent-random-perturbations. 
+The last kind of error is the focus of my experiments. How I am simulating these kind of errors is part of another repository here-[https://github.com/Mr-Markovian/spatially-coherent-random-perturbations]. 
 But this kind of IC is specific to our study and not necessary for the weak-4dvar algorithm in general. 
 
 
@@ -67,9 +68,9 @@ To experiment with new models, we need two things:
 1. The dataset and the dataloader within it for the observations of the system.
 2. A pytorch implementation of 'your_dynamical_system.py' using pytorch's nn module.
 
-The neuralode package [https://github.com/rtqichen/torchdiffeq](https://github.com/rtqichen/torchdiffeq) is what I use to handle the derivative computation. At this moment, the code is purely designed for my own experiments. If you find it useful and want to collaborate on an interesting idea in the space of data assimilation and dynamical systems, reach out to me via email or linkedin :)
+The neuralode package [torchdiffeq](https://github.com/rtqichen/torchdiffeq) is what I use to handle the derivative computation. At this moment, the code is purely designed for my own experiments. If you find it useful and want to collaborate on an interesting idea in the space of data assimilation and dynamical systems, reach out to me via email or linkedin :)
 
-Currently, the my publication is under preparation and will be submitted soon, but incase you use it, do not hesitate to use the following citation:
+Currently, my publication is under preparation and will be submitted soon, but incase you use my code for your own experiments, do not hesitate to use the following citation:
 ```bibtex
 @inproceedings{Roy2025,
   author = {Roy, S. K. and Fablet, R.},
