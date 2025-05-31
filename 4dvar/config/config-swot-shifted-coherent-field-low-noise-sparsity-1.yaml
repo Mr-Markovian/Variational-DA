@@ -52,7 +52,7 @@ fourd_var:
   seed2: 39   # seed for the random-shift y fields
   l_scale: 5  # spatial correlation length
   t_scale: 20  # Temporal correlation length
-  sigma_field: 0.0    # Standard deviation of the random-shifted fields
+  sigma_field: 1.0    # Standard deviation of the random-shifted fields
   mean_x: 0.0
   mean_y: 0.0
   max_batch: 1
