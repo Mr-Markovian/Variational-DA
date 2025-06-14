@@ -8,6 +8,7 @@ def initialize_optimizer(X_torch, fourDvar_cfg):
     if fourDvar_cfg.optimizer == 'ADAM':
         return torch.optim.Adam([X_torch], lr=fourDvar_cfg.delta, eps=1e-3, amsgrad=True)
     if fourDvar_cfg.optimizer == 'LBFGS':
+        # The parameters of this optimizer remains untouched.
         return torch.optim.LBFGS([X_torch], lr=1.0, history_size=20, line_search_fn='strong_wolfe')
     raise ValueError(f"Unknown optimizer type: {fourDvar_cfg.optimizer}")
 

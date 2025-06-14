@@ -7,7 +7,7 @@ from utils import extract_states_from_batch, initialize_optimizer
 def optimize(QG_ODE_model, qg, params, qg_data_cfg, batch_idx, batch, fourDvar_cfg):
     """perform the 4dvar optimization for a specific number of iterations and then compute the rmse of the obtained solutions"""
 
-    X_torch, X_sf_torch, YObs_torch, Masks_torch= extract_states_from_batch(batch, fourDvar_cfg, params) 
+    X_torch, X_sf_torch, _, Masks_torch= extract_states_from_batch(batch, fourDvar_cfg, params) 
     # Re-initialize the field to have a gradient tensor..
     X_torch = torch.autograd.Variable(X_torch, requires_grad=True)
     X_torch.retain_grad()
@@ -22,12 +22,13 @@ def optimize(QG_ODE_model, qg, params, qg_data_cfg, batch_idx, batch, fourDvar_c
     losses = torch.zeros(fourDvar_cfg.NIter, 3)
     for iter in range(fourDvar_cfg.NIter):
         with torch.set_grad_enabled(True):
-            if fourDvar_cfg.optim_switch_iter == 28:
-                fourDvar_cfg.optimizer = 'LBFGS'  # Switch to LBFGS after 500 iterations
-                print("Switching to LBFGS optimizer after 20 iterations.")
-                optimizer = initialize_optimizer(X_torch, fourDvar_cfg)
+            if iter == 1:
+                temp_fourDvar_cfg = fourDvar_cfg.copy()
+                temp_fourDvar_cfg.optimizer = "LBFGS"  # Switch to LBFGS after 500 iterations
+                print("Switching to LBFGS optimizer after n iterations.")
+                optimizer = initialize_optimizer(X_torch, temp_fourDvar_cfg)
 
-            if fourDvar_cfg.optimizer == 'LBFGS' or iter >= 28:
+            if iter >= 1:
             # Define the closure for LBFGS
                 def closure():
                     optimizer.zero_grad()  # Reset gradients

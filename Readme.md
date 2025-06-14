@@ -72,7 +72,7 @@ The neuralode package [torchdiffeq](https://github.com/rtqichen/torchdiffeq) is 
 
 Currently, my publication is under preparation and will be submitted soon, but incase you use my code for your own experiments, do not hesitate to use the following citation:
 ```bibtex
-@inproceedings{Roy2025,
+@inproceedings{Roy2025a,
   author = {Roy, S. K. and Fablet, R.},
   title = {Performance Gains and Advantages of 4DVarNet in End-to-End Learning for Data Assimilation},
   booktitle = {EGU General Assembly 2025},
