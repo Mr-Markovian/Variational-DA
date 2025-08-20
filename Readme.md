@@ -5,7 +5,7 @@
 This repositiory contains a new code for solving the weak-constraint 4dvar or simply weak-4dvar data assimilation for a differentiable QG model. All the code in this repo is implemented in pytorch with handing experiment configurations using hydra. 
 
 ## Problem statement: 
-Given the sequence of observations Observations sequence $Y^i=\left(y^i_0,y^i_1,...y^i_n\right)$ on $\left(\Omega^i_n\right) \in \Omega$, find the optimal trajectory  $X^i=\left(x^i_0,x^i_1,...x^i_n\right)$ that minimizes the following cost function. 
+Given the sequence of observations Observations sequence \(Y^i=\left(y^i_0,y^i_1,...y^i_n\right)\) on $\left(\Omega^i_n\right) \in \Omega$, find the optimal trajectory  \(X^i=\left(x^i_0,x^i_1,...x^i_n\right)\) that minimizes the following cost function. 
 The weak-4dvar cost function is:
 
 $$\mathcal{J}(x^i_0,x^i_1,...x^i_n)=\sum_{k=1} \alpha_{dyn} \| x_k - \mathcal{M}(x_{k-1}) \|^2+ \alpha_{ob} \|y_i-\mathcal{H}(x_i)\|^2$$
