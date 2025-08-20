@@ -5,7 +5,7 @@
 This repositiory contains a new code for solving the weak-constraint 4dvar or simply weak-4dvar data assimilation for a differentiable QG model. All the code in this repo is implemented in pytorch with handing experiment configurations using hydra. 
 
 ## Problem statement: 
-Given the sequence of observations Observations sequence \(Y^i=\left(y^i_0,y^i_1,...y^i_n\right)\) on $\left(\Omega^i_n\right) \in \Omega$, find the optimal trajectory  \(X^i=\left(x^i_0,x^i_1,...x^i_n\right)\) that minimizes the following cost function. 
+Given the sequence of observations Observations sequence $Y^i=\left(y^i_0,y^i_1,...y^i_n\right)$ on $\left(\Omega^i_n\right) \in \Omega$, find the optimal trajectory  $X^i=\left(x^i_0,x^i_1,...x^i_n\right)$ that minimizes the following cost function. 
 The weak-4dvar cost function is:
 
 $$\mathcal{J}(x^i_0,x^i_1,...x^i_n)=\sum_{k=1} \alpha_{dyn} \| x_k - \mathcal{M}(x_{k-1}) \|^2+ \alpha_{ob} \|y_i-\mathcal{H}(x_i)\|^2$$
@@ -70,9 +70,10 @@ To experiment with new models, we need two things:
 
 The neuralode package [torchdiffeq](https://github.com/rtqichen/torchdiffeq) is what I use to handle the derivative computation. At this moment, the code is purely designed for my own experiments. If you find it useful and want to collaborate on an interesting idea in the space of data assimilation and dynamical systems, reach out to me via email or linkedin :)
 
-Currently, my publication is under preparation and will be submitted soon, but incase you use my code for your own experiments, do not hesitate to use the following citation:
+Currently, my publication is under preparation and will be submitted soon. This was used for some of my experiments which were presented at the EGU General Assembly 2025.
+
 ```bibtex
-@inproceedings{Roy2025a,
+@conference{Roy2025a,
   author = {Roy, S. K. and Fablet, R.},
   title = {Performance Gains and Advantages of 4DVarNet in End-to-End Learning for Data Assimilation},
   booktitle = {EGU General Assembly 2025},
