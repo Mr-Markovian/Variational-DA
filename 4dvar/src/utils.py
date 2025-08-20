@@ -16,6 +16,7 @@ def initialize_optimizer(X_torch, fourDvar_cfg):
 def extract_states_from_batch(batch, fourDvar_cfg, params):
     """Extract and preprocess states from the batch based on the initial condition type."""
     X_torch, X_sf_torch, YObs_torch, Masks_torch = batch
+    _,T,W,H=X_torch.shape
     if fourDvar_cfg.ic_type == 'true field':
         return X_torch.squeeze(0), X_sf_torch.squeeze(0), YObs_torch.squeeze(0), Masks_torch.squeeze(0)
 
@@ -24,9 +25,9 @@ def extract_states_from_batch(batch, fourDvar_cfg, params):
         return X_torch.squeeze(0), X_sf_torch.squeeze(0), YObs_torch.squeeze(0), Masks_torch.squeeze(0)
 
     if fourDvar_cfg.ic_type == 'coherent-space-shifted':
-        displacement_x = generate_correlated_fields(params.Nx, fourDvar_cfg.l_scale, fourDvar_cfg.t_scale, 
+        displacement_x = generate_correlated_fields(W, fourDvar_cfg.l_scale, fourDvar_cfg.t_scale, 
                                                     fourDvar_cfg.sigma_field, device=params.device, seed=fourDvar_cfg.seed1)
-        displacement_y = generate_correlated_fields(params.Nx, fourDvar_cfg.l_scale, fourDvar_cfg.t_scale, 
+        displacement_y = generate_correlated_fields(W, fourDvar_cfg.l_scale, fourDvar_cfg.t_scale, 
                                                     fourDvar_cfg.sigma_field, device=params.device, seed=fourDvar_cfg.seed2)
         X_torch = warp_field(X_torch.squeeze(0).unsqueeze(1), displacement_x + fourDvar_cfg.mean_x, 
                              displacement_y + fourDvar_cfg.mean_y).squeeze(1)

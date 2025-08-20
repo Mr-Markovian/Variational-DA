@@ -5,7 +5,7 @@ import math
 import torch
 import torch.nn as nn
 import numpy as np
-from grid import TwoGrid
+from src.grid import TwoGrid
 from torchdiffeq import odeint_adjoint, odeint
 
 class QG(nn.Module):
@@ -13,6 +13,7 @@ class QG(nn.Module):
         def __init__(self, params):
             super(QG, self).__init__()
             # dimensions : 
+            self.regime   = params['regime']
             self.dt       = params['dt']
             self.t        = torch.tensor(0)
             self.wave_num = 4#torch.nn.Parameter(torch.randn(1,1)*0+1, requires_grad=True)
@@ -109,10 +110,12 @@ class QG(nn.Module):
             p = self.to_physical(ph)
             return p
 
-        def get_vorticity(self,ph):
+        def get_vorticity(self,p):
             # return vorticity in spectral
-            qh = -ph / self.grid.irsq.unsqueeze(0)
-            return qh
+            ph= self.to_spectral(p)
+            qh = -ph * self.grid.krsq.unsqueeze(0)
+            q= self.to_physical(qh)
+            return q
         
         def non_linear(self, qh):
             # compute stream function and u and v in spectral domain
@@ -165,7 +168,8 @@ class ODE_Block(nn.Module):
         self.solver = qg_solver_cfg.solver
         self.use_adjoint = qg_solver_cfg.adjoint
         self.num_steps=qg_solver_cfg.num_steps
-        self.integration_time = self.step_size * torch.arange(0, self.num_steps, dtype=torch.float32)
+        #self.integration_time = self.step_size * torch.arange(0, self.num_steps, 10, dtype=torch.float32)
+        self.integration_time = torch.tensor([0, self.step_size * (self.num_steps)])
 
     @property
     def ode_method(self):
@@ -174,10 +178,65 @@ class ODE_Block(nn.Module):
     def forward(self, x: torch.Tensor, adjoint: bool = True, integration_time=None):
         integration_time = self.integration_time if integration_time is None else integration_time
         integration_time = integration_time.to(x.device)
-        ode_method = odeint_adjoint if adjoint else odeint
+        ode_method = odeint_adjoint if self.use_adjoint else odeint
         out = ode_method(
-            self.odefunc, x, integration_time, rtol=self.rtol,
-            atol=self.atol, method=self.solver, adjoint_params=()
+            self.odefunc, x, t=integration_time, rtol=self.rtol,
+            atol=self.atol, method=self.solver, adjoint_params=(), options={'step_size': self.step_size}
         )
         return out[-1]
+    
 
+class UpsampleODE_Block(nn.Module):
+    def __init__(self, odefunc: nn.Module, qg_solver_cfg):
+        """
+        Initializes the QG_Block with the given ODE function and solver configuration.
+        :param odefunc: The ODE function to be used in the block."""
+        super().__init__()
+        self.odefunc = odefunc
+        self.rtol = qg_solver_cfg.rtol
+        self.atol = qg_solver_cfg.atol
+        self.step_size = qg_solver_cfg.step_size
+        self.solver = qg_solver_cfg.solver
+        self.use_adjoint = qg_solver_cfg.adjoint
+        self.num_steps=qg_solver_cfg.num_steps
+        #self.integration_time = self.step_size * torch.arange(0, self.num_steps, 10, dtype=torch.float32)
+        self.integration_time = torch.tensor([0, self.step_size * (self.num_steps)])
+
+    @property
+    def ode_method(self):
+        return odeint_adjoint if self.use_adjoint else odeint
+
+    def forward(self, x: torch.Tensor, adjoint: bool = True, integration_time=None):
+        integration_time = self.integration_time if integration_time is None else integration_time
+        integration_time = integration_time.to(x.device)
+        ode_method = odeint_adjoint if self.use_adjoint else odeint
+        
+        out = ode_method(
+            self.odefunc, x, t=integration_time, rtol=self.rtol,
+            atol=self.atol, method=self.solver, adjoint_params=(), options={'step_size': self.step_size}
+        )
+        return out[-1]
+    
+    
+class QG_constraint(nn.Module):
+    def __init__(self, odefunc: nn.Module, step_size, num_steps):
+        """
+        Initializes the ODE_Block with the given ODE function and solver configuration.
+        :param odefunc: The ODE function to be used in the block."""
+        super().__init__()
+        self.odefunc = odefunc
+        self.step_size = step_size
+        self.num_steps= num_steps
+    def forward_ae(self, x: torch.Tensor):
+        return x
+
+    def forward(self, x: torch.Tensor):
+        B, T, H, W = x.shape
+        x_vorticity=self.odefunc.get_vorticity(x.reshape(B * T, H, W)) 
+        # We now compute terms for dx/dt = fx
+        fx = self.odefunc(t=0,q=x_vorticity).reshape(B, T, H, W) # t is immaterial, as rhs is time independent
+        x_vorticity = x_vorticity.reshape(B, T, H, W)
+        diff=x_vorticity[:,2:]-x_vorticity[:,:-2] - 2*self.num_steps * self.step_size * fx[:,1:-1]
+        # We return the sum of squares of the differences
+        loss = torch.sum(diff ** 2)
+        return loss

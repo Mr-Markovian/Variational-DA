@@ -1,5 +1,6 @@
 # fourDvar_solver.py
 import torch
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from dataset import QGDataset
 from utils import extract_states_from_batch, initialize_optimizer
@@ -63,19 +64,81 @@ def optimize(QG_ODE_model, qg, params, qg_data_cfg, batch_idx, batch, fourDvar_c
         
     return losses, X_torch 
 
-
+# Interpolate and then compute the loss
 def compute_loss(QG_ODE_model, qg, X_torch, X_sf_torch, Masks_torch, noise, fourDvar_cfg):
     """Compute the total loss, including dynamical and observational losses."""
-    X_pred = QG_ODE_model(X_torch[0:fourDvar_cfg.days - 1])
-    sf_pred = qg.get_streamfunction(X_pred)
-    sf_torch = qg.get_streamfunction(X_torch)
+    T,W,H= X_torch.shape
 
-    loss_dyn = torch.sum((sf_torch[1:] - sf_pred) ** 2)
+    X_interp= F.interpolate(X_torch.unsqueeze(0).unsqueeze(0), size=(T * 10, W, H), mode='trilinear', align_corners=True)
+    X_interp = X_interp.squeeze(0).squeeze(0)  # Remove batch dimension
+    #X_pred = QG_ODE_model(X_interp[0:fourDvar_cfg.days - 1])
+    #X_pred = QG_ODE_model(X_interp)
+    #sf_ = qg.get_streamfunction(X_pred)
+    sf_torch = qg.get_streamfunction(X_torch)
+    # We now compute terms for dx/dt = fx
+    fx = qg(t=0,q=X_interp[1:-1:2])
+    diff=X_interp[2::2]-X_interp[:-2:2] - 2*20*fourDvar_cfg.delta_t * fx
+    #sf_pred= F.interpolate(sf_.unsqueeze(0).unsqueeze(0), size=(T, W, H), mode='trilinear', align_corners=True)
+    #sf_pred = sf_pred.squeeze(0).squeeze(0)
+    #sf_pred = sf_pred.squeeze(0)  # Remove batch dimension
+    #loss_dyn = torch.sum((sf_torch[1:] - sf_pred[0:-1]) ** 2)
+    loss_dyn = torch.sum(diff ** 2)/5  # Dynamical loss based on the difference in streamfunction
     loss_obs = torch.sum((sf_torch[Masks_torch] - X_sf_torch[Masks_torch] + noise) ** 2)
 
     total_loss = fourDvar_cfg.alpha_obs * loss_obs + fourDvar_cfg.alpha_dyn * loss_dyn
     return total_loss, loss_dyn, loss_obs
 
+# def compute_loss(QG_ODE_model, qg, X_torch, X_sf_torch, Masks_torch, noise, fourDvar_cfg):
+#     """Compute the total loss, including dynamical and observational losses."""
+#     T,W,H= X_torch.shape
+
+#     X_interp= F.interpolate(X_torch.unsqueeze(0).unsqueeze(0), size=(T * 10, W, H), mode='trilinear', align_corners=True)
+#     X_interp = X_interp.squeeze(0).squeeze(0)  # Remove batch dimension
+#     #X_pred = QG_ODE_model(X_interp[0:fourDvar_cfg.days - 1])
+#     X_pred = QG_ODE_model(X_interp)
+#     sf_ = qg.get_streamfunction(X_pred)
+#     sf_torch = qg.get_streamfunction(X_torch)
+#     sf_pred= F.interpolate(sf_.unsqueeze(0).unsqueeze(0), size=(T, W, H), mode='trilinear', align_corners=True)
+#     sf_pred = sf_pred.squeeze(0).squeeze(0)
+#     sf_pred = sf_pred.squeeze(0)  # Remove batch dimension
+#     loss_dyn = torch.sum((sf_torch[1:] - sf_pred[0:-1]) ** 2)
+#     loss_obs = torch.sum((sf_torch[Masks_torch] - X_sf_torch[Masks_torch] + noise) ** 2)
+
+#     total_loss = fourDvar_cfg.alpha_obs * loss_obs + fourDvar_cfg.alpha_dyn * loss_dyn
+#     return total_loss, loss_dyn, loss_obs
+
+## This one is the original cost 
+# def compute_loss(QG_ODE_model, qg, X_torch, X_sf_torch, Masks_torch, noise, fourDvar_cfg):
+#     """Compute the total loss, including dynamical and observational losses."""
+#     X_pred = QG_ODE_model(X_torch[0:fourDvar_cfg.days - 1])
+#     sf_pred = qg.get_streamfunction(X_pred)
+#     sf_torch = qg.get_streamfunction(X_torch)
+
+#     loss_dyn = torch.sum((sf_torch[1:] - sf_pred) ** 2)
+#     loss_obs = torch.sum((sf_torch[Masks_torch] - X_sf_torch[Masks_torch] + noise) ** 2)
+
+#     total_loss = fourDvar_cfg.alpha_obs * loss_obs + fourDvar_cfg.alpha_dyn * loss_dyn
+#     return total_loss, loss_dyn, loss_obs
+
+# def compute_loss(QG_ODE_model, qg, X_torch, X_sf_torch, Masks_torch, noise, fourDvar_cfg):
+#     """Compute the total loss, including dynamical and observational losses."""
+#     T,W,H= X_torch.shape
+#     # downscale to low res.
+#     X_interp= F.interpolate(X_torch.unsqueeze(1), size=(W//2, H//2), mode='area')
+#     X_interp = X_interp.squeeze(1)  # Remove batch dimension
+    
+#     X_pred = QG_ODE_model(X_interp)
+#     sf_pred = qg.get_streamfunction(X_pred)
+#     sf_interp = qg.get_streamfunction(X_interp)
+#     sf_pred = sf_pred.squeeze(1)
+#     # print(f"sf_pred shape: {sf_pred.shape}, sf_torch shape: {sf_torch.shape}")
+#     loss_dyn = torch.sum((sf_interp[1:] - sf_pred[0:-1]) ** 2)
+
+#     # Upscale the predicted streamfunction to the original resolution
+#     sf_pred= F.interpolate(sf_interp.unsqueeze(1), size=(W, H), mode='area').squeeze(1)
+#     loss_obs = torch.sum((sf_pred[Masks_torch] - X_sf_torch[Masks_torch] + noise) ** 2)
+#     total_loss = fourDvar_cfg.alpha_obs * loss_obs + fourDvar_cfg.alpha_dyn * loss_dyn
+#     return total_loss, loss_dyn, loss_obs
 
 def solve_fourDvar(QG_ODE_model, qg, params, qg_data_cfg, fourDvar_cfg):
     """Multiple 4dvar problems for different batch of initial conditions, optimizing each batch separately.
